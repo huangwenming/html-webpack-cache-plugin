@@ -1,0 +1,49 @@
+{
+  "author": {
+    "name": "huangwenming",
+    "email": "1205597228@qq.com",
+    "url": "https://github.com/huangwenming"
+  },
+  "bugs": {
+    "url": "https://github.com/huangwenming/html-webpack-cache-plugin/issues"
+  },
+  "dependencies": {
+    "html-webpack-plugin": "@^3.2.0"
+  },
+  "description": "Based on the functions of html-webpack-plugin that simplifies creation of HTML files to serve your webpack bundles, we can cache the webpack bundles using localstorage to optimize the page loading speed",
+  "devDependencies": {
+
+  },
+  "directories": {},
+  "files": [
+    "index.js"
+  ],
+  "homepage": "https://github.com/huangwenming/html-webpack-cache-plugin",
+  "keywords": [
+    "webpack",
+    "plugin",
+    "html",
+    "cache",
+    "html-webpack-cache-plugin",
+    "html-webpack-plugin"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "huangwenming",
+      "email": "1205597228@qq.com"
+    }
+  ],
+  "name": "html-webpack-cache-plugin",
+  "optionalDependencies": {},
+  "peerDependencies": {
+    "webpack": "^4",
+    "html-webpack-plugin": "@^3.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huangwenming/html-webpack-cache-plugin.git"
+  },
+  "version": "1.0.0"
+}
