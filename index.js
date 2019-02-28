@@ -37,6 +37,7 @@ class HtmlWebpackCachePlugin {
                     }
                     // 请求对应测js文件
                     function includeJs(sId, fileUrl, source) {
+                        // alert(fileUrl)
                         if (( source != null ) && ( !document.getElementById(sId) )) {
                             var oHead = document.getElementsByTagName("HEAD").item(0);
                             var oScript = document.createElement("script"); oScript.type = "text/javascript";
@@ -96,12 +97,12 @@ class HtmlWebpackCachePlugin {
                         var lsId = '"' + scriptPath + '"';
                         var quotLsId = lsId.replace(/\"/g, '\'');
                         htmlContent += syncLoadScript;
-                        htmlContent += 'if (localStorage) {'
-                            + 'var scriptFromCache = localStorage.getItem(' + lsId + ');'
-                            + 'var scriptDom = document.querySelector("[ls_id=' + quotLsId + ']");'
-                            + 'if (scriptFromCache) {scriptDom.text = (new Function(scriptFromCache))();}else {'
-                            + 'ajaxPage(' + lsId + ', ' + lsId + ', "js")}} else {'
-                            + 'scriptDom.defer = true;scriptDom.setAttribute("src",' + lsId + ');}'
+                        htmlContent += 'if (localStorage) {\n'
+                            + 'var scriptFromCache = localStorage.getItem(' + lsId + ');\n'
+                            + 'var scriptDom = document.querySelector("[ls_id=' + quotLsId + ']");\n'
+                            + 'if (scriptFromCache) {\nscriptDom.text = (new Function(scriptFromCache))();\n}\nelse {\n'
+                            + 'ajaxPage(' + lsId + ', ' + lsId + ', "js")\n}}\n else {\n'
+                            + 'scriptDom.defer = true;\nscriptDom.setAttribute("src",' + lsId + ');\n}'
                         script.innerHTML = htmlContent;
                         script.attributes = {
                             type: 'text/javascript',
@@ -110,44 +111,51 @@ class HtmlWebpackCachePlugin {
                         return script;
                     });
 
-                    let styles = data.head.map(function (style) {
+                    let styles = [];
+                    data.head.map(function (style) {
                         // 创建style标签，用于无缓存情况下，请求css文件之后，嵌入样式
                         let stylePath = style.attributes.href;
-                        return {
-                            tagName: 'style',
-                            closeTag: true,
-                            attributes: {
-                                type: 'text/css',
-                                ls_id: stylePath
-                            }
-                        };
+                        if (/\.css$/.test(stylePath)) {
+                            styles.push({
+                                tagName: 'style',
+                                closeTag: true,
+                                attributes: {
+                                    type: 'text/css',
+                                    ls_id: stylePath
+                                }
+                            });
+                        }
                     });
+                    console.log(styles)
                     // 支持css缓存，则需要把link标签修改为script标签，然后为scirpt标签注入缓存代码
-                    let cacheStyles = data.head.map(function (style) {
+                    let cacheStyles = [];
+                    data.head.map(function (style) {
                         let stylePath = style.attributes.href;
-                        var htmlContent = '';
-                        var lsId = '"' + stylePath + '"';
-                        var quotLsId = lsId.replace(/\"/g, '\'');
-                        htmlContent += syncLoadCss;
-                        htmlContent += 'if (localStorage) {'
-                            + 'var cssFromCache = localStorage.getItem(' + lsId + ');'
-                            + 'var cssDom = document.querySelector("style[ls_id=' + quotLsId + ']");'
-                            + 'if (cssFromCache) {cssDom.innerHTML = cssFromCache;}else {'
-                            + 'ajaxPage(' + lsId + ', ' + lsId + ', "css")}} else {'
-                            + 'cssDom.setAttribute("href",' + lsId + ');}';
-                        return {
-                            tagName: 'script',
-                            closeTag: true,
-                            attributes: {
-                                type: 'text/javascript',
-                            },
-                            innerHTML: htmlContent
+                        if (/\.css$/.test(stylePath)) {
+                            var htmlContent = '';
+                            var lsId = '"' + stylePath + '"';
+                            var quotLsId = lsId.replace(/\"/g, '\'');
+                            htmlContent += syncLoadCss;
+                            htmlContent += 'if (localStorage) {'
+                                + 'var cssFromCache = localStorage.getItem(' + lsId + ');'
+                                + 'var cssDom = document.querySelector("style[ls_id=' + quotLsId + ']");'
+                                + 'if (cssFromCache) {cssDom.innerHTML = cssFromCache;}else {'
+                                + 'ajaxPage(' + lsId + ', ' + lsId + ', "css")}} else {'
+                                + 'cssDom.setAttribute("href",' + lsId + ');}';
+                            cacheStyles.push({
+                                tagName: 'script',
+                                closeTag: true,
+                                attributes: {
+                                    type: 'text/javascript',
+                                },
+                                innerHTML: htmlContent
+                            });
                         }
                     });
                     styles = styles.concat(cacheStyles);
                     data.body = cacheScripts;
                     data.head = styles;
-                    // console.log(data);
+                    // console.log(styles);
                     // Tell webpack to move on
                     cb(null, data)
                 }
