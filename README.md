@@ -95,7 +95,10 @@ localstorage.setItem("a.xxzy.js", jsContent)
 // webpack.conf.js
 var HtmlWebpackCachePlugin = require('html-webpack-cache-plugin');
  webpackConfig.plugins.push(
-        new HtmlWebpackCachePlugin({})
+        new HtmlWebpackCachePlugin({
+            jsOmit: '',  // 过滤掉的js，即不进行缓存处理，值为空或正则表达式
+            cssOmit: ''  // 过滤掉的css，即不进行缓存处理，值为空或正则表达式
+        })
     );
 
 ```

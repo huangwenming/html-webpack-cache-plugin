@@ -6,7 +6,12 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 class HtmlWebpackCachePlugin {
+    constructor(options) {
+        this.options = options || {};
+    }
     apply (compiler) {
+        let self = this;
+        // console.log(self.options)
         compiler.hooks.compilation.tap('HtmlWebpackCachePlugin', (compilation) => {
             // console.log('The compiler is starting a new compilation...')
 
@@ -90,32 +95,37 @@ class HtmlWebpackCachePlugin {
                     // 拼出缓存机制下的scirpt标签内的缓存处理代码
                     var syncLoadScript = getHttpRequest.toString() + ajaxPage.toString() + includeJs.toString();
                     var syncLoadCss = getHttpRequest.toString() + ajaxPage.toString() + includeCss.toString();
-
-                    let cacheScripts = data.body.map(function (script) {
+                    // 依据options中的jsOmit和cssOmit选项，进行过滤
+                    let options = self.options;
+                    let {jsOmit, cssOmit} = options;
+                    let [cacheScripts, styles, cacheStyles] = [[], [], []];
+                    // 生成支持js缓存的script标签
+                    data.body.map(function (script) {
                         let scriptPath = script.attributes.src;
-                        var htmlContent = '';
-                        var lsId = '"' + scriptPath + '"';
-                        var quotLsId = lsId.replace(/\"/g, '\'');
-                        htmlContent += syncLoadScript;
-                        htmlContent += 'if (localStorage) {\n'
-                            + 'var scriptFromCache = localStorage.getItem(' + lsId + ');\n'
-                            + 'var scriptDom = document.querySelector("[ls_id=' + quotLsId + ']");\n'
-                            + 'if (scriptFromCache) {\nscriptDom.text = (new Function(scriptFromCache))();\n}\nelse {\n'
-                            + 'ajaxPage(' + lsId + ', ' + lsId + ', "js")\n}}\n else {\n'
-                            + 'scriptDom.defer = true;\nscriptDom.setAttribute("src",' + lsId + ');\n}'
-                        script.innerHTML = htmlContent;
-                        script.attributes = {
-                            type: 'text/javascript',
-                            ls_id: scriptPath
-                        };
-                        return script;
+                        if (!(jsOmit && jsOmit.test(scriptPath))) {
+                            var htmlContent = '';
+                            var lsId = '"' + scriptPath + '"';
+                            var quotLsId = lsId.replace(/\"/g, '\'');
+                            htmlContent += syncLoadScript;
+                            htmlContent += 'if (localStorage) {\n'
+                                + 'var scriptFromCache = localStorage.getItem(' + lsId + ');\n'
+                                + 'var scriptDom = document.querySelector("[ls_id=' + quotLsId + ']");\n'
+                                + 'if (scriptFromCache) {\nscriptDom.text = (new Function(scriptFromCache))();\n}\nelse {\n'
+                                + 'ajaxPage(' + lsId + ', ' + lsId + ', "js")\n}}\n else {\n'
+                                + 'scriptDom.defer = true;\nscriptDom.setAttribute("src",' + lsId + ');\n}'
+                            script.innerHTML = htmlContent;
+                            script.attributes = {
+                                type: 'text/javascript',
+                                ls_id: scriptPath
+                            };
+                        }
+                        cacheScripts.push(script);
                     });
 
-                    let styles = [];
                     data.head.map(function (style) {
                         // 创建style标签，用于无缓存情况下，请求css文件之后，嵌入样式
                         let stylePath = style.attributes.href;
-                        if (/\.css$/.test(stylePath)) {
+                        if (/\.css$/.test(stylePath) && !(cssOmit && cssOmit.test(stylePath))) {
                             styles.push({
                                 tagName: 'style',
                                 closeTag: true,
@@ -126,12 +136,11 @@ class HtmlWebpackCachePlugin {
                             });
                         }
                     });
-                    console.log(styles)
+                    // console.log(styles)
                     // 支持css缓存，则需要把link标签修改为script标签，然后为scirpt标签注入缓存代码
-                    let cacheStyles = [];
                     data.head.map(function (style) {
                         let stylePath = style.attributes.href;
-                        if (/\.css$/.test(stylePath)) {
+                        if (/\.css$/.test(stylePath) && !(cssOmit && cssOmit.test(stylePath))) {
                             var htmlContent = '';
                             var lsId = '"' + stylePath + '"';
                             var quotLsId = lsId.replace(/\"/g, '\'');
