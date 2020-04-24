@@ -1,6 +1,7 @@
 # html-webpack-cache-plugin
+![npm version](https://img.shields.io/npm/v/html-webpack-cache-plugin)  
 
-Based on the functions of [html-webpack-plugin](https://github.com/jantimon/html-webpack-plugin) that simplifies creation of HTML files to serve your webpack bundles, we can cache the webpack bundles using localstorage to optimize the page loading speed.
+> Based on the functions of [html-webpack-plugin](https://github.com/jantimon/html-webpack-plugin) that simplifies creation of HTML files to serve your webpack bundles, we can cache the webpack bundles using localstorage to optimize the page loading speed.
 
 ## 插件功能
 
