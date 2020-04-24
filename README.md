@@ -6,7 +6,7 @@ Based on the functions of [html-webpack-plugin](https://github.com/jantimon/html
 
 1. 将原来webpack产出的bundle进行缓存处理，包含js和css，以达到二次打开页面秒开的效果。
 
-使用html-webpack-plugin产出的代码是：
+只使用html-webpack-plugin产出的代码是：
 ```
 <head>
 <link href="a.xxxx.css" rel="stylesheet">
@@ -18,7 +18,7 @@ Based on the functions of [html-webpack-plugin](https://github.com/jantimon/html
 
 ```
 
-使用html-webpack-cache-plugin产出后的代码是：
+配合使用html-webpack-cache-plugin产出后的代码是：
 
 头部的css处理：
 ```
@@ -50,11 +50,11 @@ body部分的js处理：
 // 先去判断localstorage中是否缓存了a.xxzz.js，缓存则从缓存中取值
 var cacheJs = localstorage.getItem("a.xxzz.js");
 if (cacheJs) {
-	document.querySelector('style[lsid="a.xxzz.js"]').innerHTML = cacheJs;
+	document.querySelector('script[lsid="a.xxzz.js"]').innerHTML = cacheJs;
 }
 // 未缓存，则读取js文件后，缓存到localstorage
 else {
-	ajaxGet("a.xxxx.css").then(function(jsContent) {
+	ajaxGet("a.xxzz.js").then(function(jsContent) {
 		document.querySelector('script[lsid="a.xxzz.js"]').innerHTML = jsContent;
 		localstorage.setItem("a.xxzz.js", jsContent)
 	});
@@ -81,32 +81,30 @@ localstorage.setItem("a.xxzy.js", jsContent)
 
 ## 如何使用
 
-**<font style="color: red"> 前提条件：目前该插件支持webpack4+html-webpack-plugin@^3.2.0(完美支持vue-cli); 要求bundle产出不跨域; bundle的名字为`filename + hash + 后缀结构`</font>**
-
-使用方法完全是基于[html-webpack-plugin](https://github.com/jantimon/html-webpack-plugin)的用法，
-在此基础之上，添加一个`frontCache`参数
+**<font style="color: red">前提条件：</font>**  
+<font style="color: red">1.支持 webpack4 + html-webpack-plugin(>=3.0.0);</font>  
+<font style="color: red">2.要求bundle产出不跨域; bundle的名字为`filename + hash + 后缀结构`</font>  
 
 ```
- npm i --save-dev html-webpack-cache-plugin
+ npm i html-webpack-cache-plugin --save-dev
 
 ```
 
 ```
 // webpack.conf.js
-var HtmlWebpackCachePlugin = require('html-webpack-cache-plugin');
- webpackConfig.plugins.push(
+// 注意：该插件需要在plugins中的位置在html-webpack-plugin之后使用
+const HtmlWebpackCachePlugin = require('html-webpack-cache-plugin');
+webpackConfig.plugins.push(
         new HtmlWebpackCachePlugin({
             jsOmit: '',  // 过滤掉的js，即不进行缓存处理，值为空或正则表达式
             cssOmit: ''  // 过滤掉的css，即不进行缓存处理，值为空或正则表达式
         })
     );
-
 ```
 
 ## 效果截图
 
 下面的截图来自实际项目：
 
-![](https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/map/pic/item/6159252dd42a28348f4b883d56b5c9ea15cebf13.jpg)
-
+![](https://github.com/huangwenming/html-webpack-cache-plugin/raw/master/images/demo-effect.png)
 
