@@ -17,3 +17,4 @@ const vueInst = new Vue({
     }
 });
 console.log(vueInst.name);
+// console.log(vueInst.name);

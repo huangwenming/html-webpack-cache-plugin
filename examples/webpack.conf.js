@@ -35,7 +35,7 @@ module.exports = {
             // Options similar to the same options in webpackOptions.output
             // both options are optional
             filename: '[name].[hash].css',
-            // chunkFilename: '[name].[hash].css'
+            chunkFilename: '[name].[hash].css'
         }),
         new HtmlWebpackPlugin({
             template: './src/index.html',
@@ -51,7 +51,14 @@ module.exports = {
         // 兼容HtmlWebpackPlugin的v3 和 v4
         new HtmlWebpackCachePlugin({
             jsOmit: /(async-)|(chunk-)/,
-            cssOmit: /(async-)|(chunk-)/
+            cssOmit: /(async-)|(chunk-)/,
+            // type: 'indexedDB',
+            // dbConf: {
+            //     dbName: 'test',
+            //     version: 1,
+            //     storeName: 'cache',
+            //     storeKey: 'path'
+            // }
         })
     ],
     optimization: {
