@@ -1,7 +1,7 @@
 # html-webpack-cache-plugin
 ![npm version](https://img.shields.io/npm/v/html-webpack-cache-plugin)  
 
-> Based on the functions of [html-webpack-plugin](https://github.com/jantimon/html-webpack-plugin) that simplifies creation of HTML files to serve your webpack bundles, we can cache the webpack bundles using localstorage to optimize the page loading speed.
+> Based on the functions of [html-webpack-plugin](https://github.com/jantimon/html-webpack-plugin) that simplifies creation of HTML files to serve your webpack bundles, we can cache the webpack bundles using localstorage or indexedDB to optimize the page loading speed.
 
 ## 插件功能
 
@@ -19,7 +19,7 @@
 
 ```
 
-配合使用html-webpack-cache-plugin产出后的代码是：
+配合使用html-webpack-cache-plugin产出后的代码（以localstorage为例）是：
 
 头部的css处理：
 ```
@@ -97,11 +97,29 @@ localstorage.setItem("a.xxzy.js", jsContent)
 const HtmlWebpackCachePlugin = require('html-webpack-cache-plugin');
 webpackConfig.plugins.push(
         new HtmlWebpackCachePlugin({
-            jsOmit: '',  // 过滤掉的js，即不进行缓存处理，值为空或正则表达式
-            cssOmit: ''  // 过滤掉的css，即不进行缓存处理，值为空或正则表达式
+			// 过滤掉的js，即不进行缓存处理，值为空或正则表达式
+            jsOmit: '',
+			// 过滤掉的css，即不进行缓存处理，值为空或正则表达式
+            cssOmit: '',
+			// 缓存类型，支持 indexedDB 和 localstorage， 默认为 localstorage
+			type: 'indexedDB',
+			// dbConf 在选择 indexedDB 缓存类型时采用，非必须配置项
+            dbConf: {
+				// 数据库名
+                dbName: 'test',
+				// 数据库版本
+                version: 1,
+				// 对象仓库名（表名）
+                storeName: 'cache',
+				// 索引键名字
+                storeKey: 'path'
+            }
         })
     );
 ```
+**打开过程日志**  
+url中携带`supportCacheDebug=1`参数即可
+
 
 ## 效果截图
 

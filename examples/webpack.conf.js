@@ -52,13 +52,13 @@ module.exports = {
         new HtmlWebpackCachePlugin({
             jsOmit: /(async-)|(chunk-)/,
             cssOmit: /(async-)|(chunk-)/,
-            // type: 'indexedDB',
-            // dbConf: {
-            //     dbName: 'test',
-            //     version: 1,
-            //     storeName: 'cache',
-            //     storeKey: 'path'
-            // }
+            type: 'indexedDB',
+            dbConf: {
+                dbName: 'test',
+                version: 1,
+                storeName: 'cache',
+                storeKey: 'path'
+            }
         })
     ],
     optimization: {
