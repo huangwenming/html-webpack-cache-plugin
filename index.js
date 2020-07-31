@@ -465,9 +465,12 @@ class HtmlWebpackCachePlugin {
                     let assetstyles = data.head || data.assetTags.styles;
 
                     // 生成支持js缓存的script标签
+                    // 需要进行去重处理
+                    const scriptIsRepeat = {};
                     assetScripts.map(script => {
                         let scriptPath = script.attributes.src;
-                        if (!(jsOmit && jsOmit.test(scriptPath))) {
+                        if (!(jsOmit && jsOmit.test(scriptPath)) && !scriptIsRepeat[scriptPath]) {
+                            scriptIsRepeat[scriptPath] = true;
                             let htmlContent = '';
                             const lsId = '"' + scriptPath + '"';
                             const quotLsId = lsId.replace(/\"/g, '\'');
@@ -499,9 +502,12 @@ class HtmlWebpackCachePlugin {
                     });
                     // console.log(styles)
                     // 支持css缓存，则需要把link标签修改为script标签，然后为scirpt标签注入缓存代码
+                    // 需要进行去重处理
+                    const stylesIsRepeat = {};
                     assetstyles.map(style => {
                         let stylePath = style.attributes.href;
-                        if (/\.css$/.test(stylePath) && !(cssOmit && cssOmit.test(stylePath))) {
+                        if (/\.css$/.test(stylePath) && !(cssOmit && cssOmit.test(stylePath)) && !stylesIsRepeat[stylePath]) {
+                            stylesIsRepeat[stylePath] = true;
                             let htmlContent = '';
                             const lsId = '"' + stylePath + '"';
                             const quotLsId = lsId.replace(/\"/g, '\'');
