@@ -400,7 +400,8 @@ class HtmlWebpackCachePlugin {
             + 'window._htmlCacheUtil.cacheConfigure(' + JSON.stringify(this.options) + ');';
         utilContent += '(' + createUtilFunc.toString() + ')()';
         const script = {
-            tagName: 'script'
+            tagName: 'script',
+            closeTag: true
         };
         script.innerHTML = utilContent;
         script.attributes = {
