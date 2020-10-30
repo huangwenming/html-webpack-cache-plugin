@@ -124,11 +124,12 @@ class HtmlWebpackCachePlugin {
                         var reg = /(.*)\.[0-9a-z]*(\.js|\.css)/;
                         var oldResult = reg.exec(key);
                         var pathNoHash = oldResult[1] && oldResult[2] ? oldResult[1] + oldResult[2] : key;
-                        var addRequest = objectStore.add({
-                            [conf.dbConf.storeKey]: key,
+                        var addData = {
                             content: value,
                             pathNoHash: pathNoHash
-                        });
+                        };
+                        addData[conf.dbConf.storeKey] = key;
+                        var addRequest = objectStore.add(addData);
                         addRequest.addEventListener('success', function (event) {
                             window._htmlCacheUtil.showLog('indexedDB: 添加数据成功', key);
                         });
@@ -395,10 +396,10 @@ class HtmlWebpackCachePlugin {
             };
         };
 
-        // 在html中插入_htmlCacheUtil片段，片段为自执行函数
-        let utilContent = '(' + this.generateLocalForage() + ')();'
+        // 在html中插入_htmlCacheUtil片段，片段为自执行函数，添加try-catch，避免插件报错导致程序终止
+        let utilContent = 'try{(' + this.generateLocalForage() + ')();'
             + 'window._htmlCacheUtil.cacheConfigure(' + JSON.stringify(this.options) + ');';
-        utilContent += '(' + createUtilFunc.toString() + ')()';
+        utilContent += '(' + createUtilFunc.toString() + ')()} catch (err) {console.log("cachePlugin error:", err)}';
         const script = {
             tagName: 'script',
             closeTag: true
@@ -408,6 +409,45 @@ class HtmlWebpackCachePlugin {
             type: 'text/javascript'
         };
         return script;
+    }
+
+    /**
+     * script缓存代码报错，需要直接请求script资源，避免程序终中断
+     * @method createScriptCacheErrorScript
+     * @return {Function} 容错函数
+     */
+    createScriptCacheErrorScript() {
+        return function (lsId, quotLsId) {
+            try {
+                window._htmlCacheUtil.checkAndRunJSCache(lsId, quotLsId);
+            }
+            catch (err) {
+                var oHead = document.getElementsByTagName('HEAD').item(0);
+                var oScript = document.createElement('script');
+                oScript.type = 'text/javascript';
+                oScript.src = lsId;
+                oHead.appendChild(oScript);
+            }
+        }
+    }
+    /**
+     * style缓存代码报错，需要直接请求script资源，避免程序终中断
+     * @method createStyleCacheErrorScript
+     * @return {Function} 容错函数
+     */
+    createStyleCacheErrorScript() {
+        return function (lsId, quotLsId) {
+            try {
+                window._htmlCacheUtil.checkAndRunCssCache(lsId, quotLsId);
+            }
+            catch (err) {
+                var oHead = document.getElementsByTagName('HEAD').item(0);
+                var olink = document.createElement('link');
+                olink.rel = 'stylesheet';
+                olink.href = lsId;
+                oHead.appendChild(olink);
+            }
+        }
     }
     apply(compiler) {
         let self = this;
@@ -474,7 +514,8 @@ class HtmlWebpackCachePlugin {
                             let htmlContent = '';
                             const lsId = '"' + scriptPath + '"';
                             const quotLsId = lsId.replace(/\"/g, '\'');
-                            htmlContent += 'window._htmlCacheUtil.checkAndRunJSCache(' + lsId + ',' + quotLsId + ')';
+                            htmlContent += '(' + this.createScriptCacheErrorScript().toString() + ')(' + lsId + ',' + quotLsId + ')';
+                            // htmlContent += 'window._htmlCacheUtil.checkAndRunJSCache(' + lsId + ',' + quotLsId + ')'
                             script.innerHTML = htmlContent;
                             script.attributes = {
                                 type: 'text/javascript',
@@ -511,7 +552,8 @@ class HtmlWebpackCachePlugin {
                             let htmlContent = '';
                             const lsId = '"' + stylePath + '"';
                             const quotLsId = lsId.replace(/\"/g, '\'');
-                            htmlContent += 'window._htmlCacheUtil.checkAndRunCssCache(' + lsId + ',' + quotLsId + ')';
+                            htmlContent += '(' + this.createStyleCacheErrorScript().toString() + ')(' + lsId + ',' + quotLsId + ')';
+                            // htmlContent += 'window._htmlCacheUtil.checkAndRunCssCache(' + lsId + ',' + quotLsId + ')';
                             cacheStyles.push({
                                 tagName: 'script',
                                 closeTag: true,

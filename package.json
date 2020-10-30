@@ -40,5 +40,5 @@
     "type": "git",
     "url": "git+https://github.com/huangwenming/html-webpack-cache-plugin.git"
   },
-  "version": "2.1.1"
+  "version": "2.1.2"
 }
